@@ -1,0 +1,16 @@
+{
+  "name": "zomboid-panel",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "nodemon ./bin/www"
+  },
+  "dependencies": {
+    "debug": "^4.3.4",
+    "express": "^4.18.1",
+    "http-errors": "^2.0.0",
+    "morgan": "^1.10.0",
+    "pug": "^3.0.2",
+    "srcds-rcon": "^2.2.1"
+  }
+}

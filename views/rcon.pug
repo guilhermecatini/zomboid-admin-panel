@@ -1,0 +1,142 @@
+extends layout
+
+block content
+	.container(data-ng-app="app")
+		.row(data-ng-controller="controller")
+			.col-12
+				.card
+					.card-header.text-center Acesso de jogador
+					.card-body
+						label(for="player") Jogador &nbsp;
+						svg.bi.bi-arrow-repeat(xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16' style="cursor: pointer;" data-ng-click="getPlayers()")
+							path(d='M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z')
+							path(fill-rule='evenodd' d='M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z')
+
+						select.form-select#player(data-ng-model="player" name="player" data-ng-options="player for player in playersOnline")
+						label(for="accesslevel") Nível de acesso
+						select.form-select#accesslevel(data-ng-model="accesslevel" name="accesslevel" data-ng-options="level.id as level.label for level in accessLevels")
+						hr
+						button.btn.btn-dark(type="button" data-ng-click="setAccessLevel()" data-ng-disabled="!player") Salvar
+					.card-footer.text-muted.text-center Catini Zomboid Server
+				hr
+				.card
+					.card-header.text-center Enviar trovão
+					.card-body
+						label(for="player") Jogador &nbsp;
+						svg.bi.bi-arrow-repeat(xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16' style="cursor: pointer;" data-ng-click="getPlayers()")
+							path(d='M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z')
+							path(fill-rule='evenodd' d='M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z')
+
+						select.form-select#player(data-ng-model="player" name="player" data-ng-options="player for player in playersOnline")
+						hr
+						button.btn.btn-dark(type="button" data-ng-click="sendThunder()" data-ng-disabled="!player") Enviar Trovão
+					.card-footer.text-muted.text-center Catini Zomboid Server
+				hr
+				.card
+					.card-header.text-center Enviar mensagem ao servidor
+					.card-body
+						label(for="message") Mensagem
+						textarea#message.form-control(name="message" cols="30" rows="10" data-ng-model="message") 
+						hr
+						button.btn.btn-dark(type="button" data-ng-click="sendMessage()" data-ng-disabled="message.length == 0") Enviar
+					.card-footer.text-muted.text-center Catini Zomboid Server
+				hr
+				.card
+					.card-header.text-center Jogadores Conectados
+					.card-body
+						label(for="playersconnected") Jogadores Conectados
+						textarea#playersconnected.form-control(name="playersconnected" cols="30" rows="10" data-ng-model="playersconnected" data-ng-disabled="true") 
+					.card-footer.text-muted.text-center Catini Zomboid Server
+
+
+	script.
+		angular.module("app", [])
+			.controller("controller", function($scope, $http) {
+
+				// Admin, Moderator, Overseer, GM, Observer
+				$scope.accessLevels = [
+					{
+						id: "none",
+						label: "Jogador"
+					},
+					{
+						id: "Admin",
+						label: "Administrador"
+					},
+					{
+						id: "Moderator",
+						label: "Moderador"
+					},
+					{
+						id: "Overseer",
+						label: "Supervisor"
+					},
+					{
+						id: "GM",
+						label: "Game Master"
+					},
+					{
+						id: "Observer",
+						label: "Observador"
+					}
+				];
+
+				$scope.setAccessLevel = function() {
+					$http({
+						method: "POST",
+						url: "/api/v1/rcon/send/setaccesslevel",
+						data: {
+							username: $scope.player,
+							accesslevel: $scope.accesslevel
+						}
+					}).then(function(res) {
+						$scope.player = "";
+						swal("Trovão enviado!", res.data.message, "success");
+					});
+				}
+
+
+				// -- Page OnLoad -- //
+				$scope.playersOnline = [];
+				$scope.getPlayers = function() {
+					$http({
+						method: "GET",
+						url: "/api/v1/rcon/get/players"
+					}).then(function(res) {
+						$scope.playersOnline = res.data.players;
+						console.log($scope.playersOnline);
+					});
+				}
+				$scope.getPlayers();
+
+				$scope.sendThunder = function () {
+					$http({
+						method: "POST",
+						url: "/api/v1/rcon/send/thunder",
+						data: {
+							player: $scope.player
+						}
+					}).then(function(res) {
+						$scope.player = "";
+						swal("Trovão enviado!", res.data.message, "success");
+					});
+				}
+
+
+
+				$scope.message = "";
+				$scope.sendMessage = function() {
+					$http({
+						method: "POST",
+						url: "/api/v1/rcon/send/servermsg",
+						data: {
+							message: $scope.message
+						}
+					}).then(function(res) {
+						$scope.response = res.data.message;
+						$scope.message = "";
+						swal("Mensagem enviada!", "", "success");
+					});
+				};
+			});
+
